@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerScript : MonoBehaviour {
 
+
     public Transform bullet;
 
     public float viewRadius;
@@ -18,6 +19,12 @@ public class PlayerScript : MonoBehaviour {
     [HideInInspector]
     public List<Transform> invisibleTargets = new List<Transform>();
 
+    private CameraScript playerCamera;
+
+    private Vector3 dir = Vector3.zero;
+    private float xMov = 0;
+    private float zMov = 0;
+
     private float bulletVelocity = 5000f;
     private float speed = 10f;
     private float rotSpeed = 200f;
@@ -29,6 +36,12 @@ public class PlayerScript : MonoBehaviour {
     private Vector3[] linePositionsLeft = new Vector3[2];
     private Vector3[] linePositionsRight = new Vector3[2];
 
+    void Awake()
+    {
+        playerCamera = FindObjectOfType<Camera>().GetComponent<CameraScript>();
+        playerCamera.player = this.transform;         
+    }
+
     void Start()
     {
         rightLine = transform.GetChild(1).GetComponent<LineRenderer>();
@@ -37,7 +50,6 @@ public class PlayerScript : MonoBehaviour {
         linePositionsLeft[0] = transform.position;
 
         Quaternion lineAngle = Quaternion.AngleAxis(viewAngle / 2, transform.up);
-        Debug.Log(Quaternion.Angle(transform.rotation,lineAngle));
 
         StartCoroutine("FindTargetsWithDelay", .1f);
     }
@@ -73,6 +85,7 @@ public class PlayerScript : MonoBehaviour {
 
         Vector3 mouseDir = mousePos - transform.position;
 
+        //Non-physics transform movement
         if (Input.GetKey(KeyCode.W))
         {
             transform.position += Vector3.forward * speed * Time.deltaTime;
@@ -93,8 +106,10 @@ public class PlayerScript : MonoBehaviour {
             transform.position += Vector3.left * speed * Time.deltaTime;
         }
 
+        //Look at mouse position
         transform.rotation = Quaternion.LookRotation(mouseDir);
 
+        //Shoot with left mouse button
         if (Input.GetMouseButtonDown(0))
         {
             Shoot();
